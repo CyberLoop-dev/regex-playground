@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regex Playground</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#121b30;--line:#263650;--ink:#e9f2ff;--muted:#9aabc4;--cyan:#53d9e8;--violet:#9c8cff;--bad:#ff8d9d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 5%,#20305a 0,transparent 35%),var(--bg);color:var(--ink);font:15px/1.55 system-ui,sans-serif}
+main{max-width:1050px;margin:48px auto;padding:0 20px}.eyebrow{color:var(--cyan);letter-spacing:.16em;text-transform:uppercase;font-size:.75rem;font-weight:700}h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.05;margin:.5rem 0}p{color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}.panel{background:#121b30eF;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 18px 60px #0003}label{display:block;font-weight:650;margin:0 0 8px}input,textarea{width:100%;background:#090f1d;border:1px solid #30415f;border-radius:10px;color:var(--ink);padding:12px;font:14px ui-monospace,monospace;outline:none}input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #53d9e822}textarea{min-height:190px;resize:vertical}.row{display:flex;gap:12px;align-items:end}.row>div{flex:1}.flags{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}.flags label{font-weight:400;color:var(--muted);margin:0}.flags input{width:auto;accent-color:var(--cyan)}button{border:1px solid #3b5579;border-radius:9px;background:#1a2b49;color:var(--ink);padding:8px 12px;cursor:pointer}button:hover{border-color:var(--cyan)}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0}.count{color:var(--cyan);font-weight:700}.error{color:var(--bad);min-height:1.5em}.result{border-top:1px solid var(--line);padding:12px 0}.match{color:var(--cyan);font-family:ui-monospace,monospace;overflow-wrap:anywhere}.meta{color:var(--muted);font-size:.85rem}.captures{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}.chip{background:#243454;border:1px solid #3a5074;border-radius:7px;padding:3px 8px;font:12px ui-monospace,monospace}.empty{color:var(--muted);padding:20px 0}@media(max-width:760px){main{margin:28px auto}.grid{grid-template-columns:1fr}.row{align-items:stretch;flex-direction:column}}
+</style>
+</head>
+<body><main>
+<div class="eyebrow">Local-first developer tool</div><h1>Regex Playground</h1>
+<p>Experiment with JavaScript regular expressions. Your sample text stays in this browser.</p>
+<div class="grid">
+<section class="panel">
+<label for="pattern">Pattern</label><input id="pattern" value="([A-Z][a-z]+)\s+(\d+)" spellcheck="false">
+<div class="flags" id="flags">
+<label><input type="checkbox" value="g" checked> global (g)</label><label><input type="checkbox" value="i"> ignore case (i)</label><label><input type="checkbox" value="m"> multiline (m)</label><label><input type="checkbox" value="s"> dot all (s)</label><label><input type="checkbox" value="u"> unicode (u)</label>
+</div>
+<div class="toolbar"><span class="meta">Try an example</span><button id="example">Load example</button></div>
+<label for="sample">Sample text</label><textarea id="sample" spellcheck="false">Ada 1843
+Grace 1906
+alan 1912</textarea>
+</section>
+<section class="panel">
+<div class="toolbar"><label style="margin:0">Matches</label><span class="count" id="count">0 matches</span></div>
+<div class="error" id="error" role="alert"></div><div id="results" aria-live="polite"><div class="empty">Enter a pattern to see results.</div></div>
+</section>
+</div>
+<p class="meta">Powered by the browser's native RegExp engine. Regex syntax can differ between programming languages.</p>
+</main>
+<script>
+const pattern=document.querySelector('#pattern'),sample=document.querySelector('#sample'),flags=document.querySelector('#flags'),results=document.querySelector('#results'),count=document.querySelector('#count'),error=document.querySelector('#error');
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function run(){error.textContent='';results.innerHTML='';try{const f=[...flags.querySelectorAll('input:checked')].map(x=>x.value).join('');const re=new RegExp(pattern.value,f);const text=sample.value;let matches=[],m,guard=0;if(!f.includes('g')){m=re.exec(text);if(m)matches.push(m);}else{while((m=re.exec(text))!==null&&guard++<500){matches.push(m);if(m[0]==='')re.lastIndex++;}}count.textContent=matches.length+' match'+(matches.length===1?'':'es');if(!matches.length){results.innerHTML='<div class="empty">No matches found.</div>';return;}for(const [i,x] of matches.entries()){const div=document.createElement('div');div.className='result';const caps=x.slice(1).map((v,j)=>'<span class="chip">$'+(j+1)+': '+esc(v??'undefined')+'</span>').join('');div.innerHTML='<div class="match">'+esc(x[0])+'</div><div class="meta">Match '+(i+1)+' · index '+x.index+'</div><div class="captures">'+(caps||'<span class="meta">No capture groups</span>')+'</div>';results.appendChild(div);}}catch(e){count.textContent='Invalid pattern';error.textContent=e.message;results.innerHTML='<div class="empty">Fix the expression to continue.</div>';}}
+[pattern,sample].forEach(x=>x.addEventListener('input',run));flags.addEventListener('change',run);document.querySelector('#example').addEventListener('click',()=>{pattern.value='\\b[A-Z][a-z]+\\b';sample.value='Ada Lovelace\nGrace Hopper\nalan Turing';run();});run();
+</script></body></html>
